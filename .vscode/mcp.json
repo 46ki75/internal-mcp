@@ -1,0 +1,10 @@
+{
+    "servers": {
+        "cloud.ikuma.internal-mcp": {
+            "command": "cargo",
+            "args": [
+                "run"
+            ],
+        }
+    }
+}
