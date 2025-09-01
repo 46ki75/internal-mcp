@@ -1,11 +1,28 @@
 #[derive(Debug, Clone)]
 pub struct Handler {
     pub tool_router: rmcp::handler::server::tool::ToolRouter<Self>,
+    pub prompt_router: rmcp::handler::server::router::prompt::PromptRouter<Self>,
     pub resource_map: crate::resource::ResourceMap,
-    pub prompt: crate::prompt::Prompt,
+}
+
+use rmcp::{
+    RoleServer,
+    model::{GetPromptRequestParam, GetPromptResult, ListPromptsResult, PaginatedRequestParam},
+    service::RequestContext,
+};
+
+impl Handler {
+    pub fn new() -> Self {
+        Self {
+            tool_router: Self::init_tool_router(),
+            prompt_router: Self::init_prompt_router(),
+            resource_map: crate::resource::ResourceMap::new(),
+        }
+    }
 }
 
 #[rmcp::tool_handler]
+#[rmcp::prompt_handler]
 impl rmcp::ServerHandler for Handler {
     fn get_info(&self) -> rmcp::model::ServerInfo {
         rmcp::model::ServerInfo {
@@ -41,24 +58,6 @@ impl rmcp::ServerHandler for Handler {
 
             Ok(rmcp::model::CompleteResult { completion })
         }
-    }
-
-    fn get_prompt(
-        &self,
-        request: rmcp::model::GetPromptRequestParam,
-        context: rmcp::service::RequestContext<rmcp::RoleServer>,
-    ) -> impl Future<Output = Result<rmcp::model::GetPromptResult, rmcp::ErrorData>> + Send + '_
-    {
-        self.prompt.get_prompt(request, context)
-    }
-
-    fn list_prompts(
-        &self,
-        request: Option<rmcp::model::PaginatedRequestParam>,
-        context: rmcp::service::RequestContext<rmcp::RoleServer>,
-    ) -> impl Future<Output = Result<rmcp::model::ListPromptsResult, rmcp::ErrorData>> + Send + '_
-    {
-        self.prompt.list_prompts(request, context)
     }
 
     fn list_resources(
