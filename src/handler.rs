@@ -14,8 +14,8 @@ use rmcp::{
 impl Handler {
     pub fn new() -> Self {
         Self {
-            tool_router: Self::init_tool_router(),
-            prompt_router: Self::init_prompt_router(),
+            tool_router: Self::tool_router(),
+            prompt_router: Self::prompt_router(),
             resource_map: crate::resource::ResourceMap::new(),
         }
     }

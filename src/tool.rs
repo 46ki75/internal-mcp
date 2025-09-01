@@ -3,12 +3,8 @@ struct GreetParams {
     name: String,
 }
 
-#[rmcp::tool_router]
+#[rmcp::tool_router(vis = "pub")]
 impl crate::handler::Handler {
-    pub fn init_tool_router() -> rmcp::handler::server::tool::ToolRouter<Self> {
-        Self::tool_router()
-    }
-
     #[rmcp::tool]
     async fn greet(
         &self,

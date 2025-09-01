@@ -3,12 +3,8 @@ struct ReviewGitCommitMessageParams {
     pub commit_message: String,
 }
 
-#[rmcp::prompt_router]
+#[rmcp::prompt_router(vis = "pub")]
 impl crate::handler::Handler {
-    pub fn init_prompt_router() -> rmcp::handler::server::router::prompt::PromptRouter<Self> {
-        Self::prompt_router()
-    }
-
     #[rmcp::prompt(description = "Request a review of your Git commit message.")]
     async fn review_git_commit_message(
         &self,
