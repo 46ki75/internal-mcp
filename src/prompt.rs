@@ -16,14 +16,15 @@ impl crate::handler::Handler {
     ) -> Result<Vec<rmcp::model::PromptMessage>, rmcp::ErrorData> {
         let text = format!(
             r#"
-        Git のコミットメッセージが技術的に自然な英語かどうかレビューしてください。
+Is this Git commit message written in technically natural English that native-speaking developers would find clear and appropriate? If there are any awkward points or possible improvements, please provide specific suggestions and reasons.
+Purpose: I want to learn how to write commit messages that are accepted in English-speaking development environments.
 
-        ## Commit Message: 
+## Commit Message: 
 
-        {}
+{}
         "#,
             commit_message
-        );
+        ).trim().to_owned();
 
         let prompt = rmcp::model::PromptMessage {
             role: rmcp::model::PromptMessageRole::User,
