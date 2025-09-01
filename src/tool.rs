@@ -5,12 +5,8 @@ struct GreetParams {
 
 #[rmcp::tool_router]
 impl crate::handler::Handler {
-    pub fn new() -> Self {
-        Self {
-            tool_router: Self::tool_router(),
-            resource_map: crate::resource::ResourceMap::new(),
-            prompt: crate::prompt::Prompt::new(),
-        }
+    pub fn init_tool_router() -> rmcp::handler::server::tool::ToolRouter<Self> {
+        Self::tool_router()
     }
 
     #[rmcp::tool]
