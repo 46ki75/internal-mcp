@@ -3,6 +3,11 @@ struct ReviewGitCommitMessageParams {
     pub commit_message: String,
 }
 
+#[derive(Debug, serde::Deserialize, rmcp::schemars::JsonSchema)]
+struct ReviewCommentParams {
+    pub code: String,
+}
+
 #[rmcp::prompt_router(vis = "pub")]
 impl crate::handler::Handler {
     #[rmcp::prompt(description = "Request a review of your Git commit message.")]
@@ -20,6 +25,32 @@ Purpose: I want to learn how to write commit messages that are accepted in Engli
 {}
         "#,
             commit_message
+        ).trim().to_owned();
+
+        let prompt = rmcp::model::PromptMessage {
+            role: rmcp::model::PromptMessageRole::User,
+            content: rmcp::model::PromptMessageContent::Text { text: text },
+        };
+
+        Ok(vec![prompt])
+    }
+
+    #[rmcp::prompt(description = "Request a review of your source code comments.")]
+    async fn review_comment(
+        &self,
+        rmcp::handler::server::wrapper::Parameters(ReviewCommentParams {
+             code,
+        }): rmcp::handler::server::wrapper::Parameters<ReviewCommentParams>,
+    ) -> Result<Vec<rmcp::model::PromptMessage>, rmcp::ErrorData> {
+        let text = format!(
+            r#"
+Is this code documentation (JSDoc, JavaDoc, doc comments, or regular comments) written in technically natural English that native-speaking developers would find clear and appropriate? If there are any awkward points or possible improvements, please provide specific suggestions and reasons. Purpose: I want to learn how to write code documentation that is accepted in English-speaking development environments.
+
+```
+{}
+```
+        "#,
+            code
         ).trim().to_owned();
 
         let prompt = rmcp::model::PromptMessage {
