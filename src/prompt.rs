@@ -9,7 +9,7 @@ impl crate::handler::Handler {
         Self::prompt_router()
     }
 
-    #[rmcp::prompt(description = "Generate code based on requirements")]
+    #[rmcp::prompt(description = "Request a review of your Git commit message.")]
     async fn review_git_commit_message(
         &self,
         rmcp::handler::server::wrapper::Parameters(ReviewGitCommitMessageParams{commit_message}) : rmcp::handler::server::wrapper::Parameters<ReviewGitCommitMessageParams>,
