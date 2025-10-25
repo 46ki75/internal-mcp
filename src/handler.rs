@@ -1,8 +1,8 @@
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Handler {
     pub tool_router: rmcp::handler::server::tool::ToolRouter<Self>,
     pub prompt_router: rmcp::handler::server::router::prompt::PromptRouter<Self>,
-    pub resource_map: crate::resource::ResourceMap,
+    pub resource_map: crate::resource::Resource,
 }
 
 use rmcp::{
@@ -16,7 +16,7 @@ impl Handler {
         Self {
             tool_router: Self::tool_router(),
             prompt_router: Self::prompt_router(),
-            resource_map: crate::resource::ResourceMap::new(),
+            resource_map: crate::resource::Resource::new(),
         }
     }
 }

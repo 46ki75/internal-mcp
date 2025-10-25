@@ -1,43 +1,21 @@
-#[derive(Debug, Clone)]
+use crate::notion_mcp_resource::{
+    repository::NotionMcpResourceRepositoryImpl, use_case::NotionMcpResourceUseCase,
+};
+
+#[derive(Clone)]
 pub struct Resource {
-    pub uri: String,
-    pub name: String,
-    pub description: Option<String>,
-    pub mime_type: Option<String>,
-    pub size: Option<u32>,
-    pub contents: rmcp::model::ResourceContents,
+    pub notion_mcp_resource_use_case: NotionMcpResourceUseCase,
 }
 
-#[derive(Debug, Clone)]
-pub struct ResourceMap {
-    inner: std::sync::Arc<std::collections::HashMap<String, Resource>>,
-}
-
-impl ResourceMap {
+impl Resource {
     pub fn new() -> Self {
-        let mut map = std::collections::HashMap::new();
-
-        let uri = "str://mcp-rust-docs/instruction";
-        let resource = Resource {
-            uri: uri.to_owned(),
-            name: "Instruction".to_owned(),
-            description: Some(
-                "Mandatory instructions for AI agents to use MCP tools when handling Rust documentation queries"
-                    .to_owned(),
-            ),
-            mime_type: Some("text/plain".to_owned()),
-            size: None,
-            contents: rmcp::model::ResourceContents::TextResourceContents {
-                uri: uri.to_owned(),
-                mime_type: Some("text/plain".to_owned()),
-                text: include_str!("./instruction.md").to_owned(),
-            },
+        let notion_mcp_resource_repository = NotionMcpResourceRepositoryImpl {};
+        let notion_mcp_resource_use_case = NotionMcpResourceUseCase {
+            notion_mcp_resource_repository: std::sync::Arc::new(notion_mcp_resource_repository),
         };
 
-        map.insert(resource.uri.to_owned(), resource);
-
         Self {
-            inner: std::sync::Arc::new(map),
+            notion_mcp_resource_use_case,
         }
     }
 
@@ -48,17 +26,22 @@ impl ResourceMap {
     ) -> impl Future<Output = Result<rmcp::model::ListResourcesResult, rmcp::ErrorData>> + Send + '_
     {
         async {
-            let resources = self
-                .inner
+            let notion_resources = self
+                .notion_mcp_resource_use_case
+                .list_resources()
+                .await
+                .unwrap();
+
+            let resources = notion_resources
                 .iter()
-                .map(|(_k, v)| {
+                .map(|resource| {
                     rmcp::model::Resource::new(
                         rmcp::model::RawResource {
-                            uri: v.uri.clone(),
-                            name: v.name.clone(),
-                            description: v.description.clone(),
-                            mime_type: v.mime_type.clone(),
-                            size: v.size,
+                            uri: resource.uri.clone(),
+                            name: resource.name.clone(),
+                            description: None,
+                            mime_type: None,
+                            size: None,
                         },
                         None,
                     )
@@ -81,11 +64,20 @@ impl ResourceMap {
         async {
             let uri = request.uri;
 
-            let contents = match self.inner.get(&uri) {
-                Some(resource) => Ok(rmcp::model::ReadResourceResult {
-                    contents: vec![resource.contents.clone()],
-                }),
-                None => Err(rmcp::ErrorData::resource_not_found(
+            let resource = self.notion_mcp_resource_use_case.get_resource(&uri).await;
+
+            let contents = match resource {
+                Ok(resource) => {
+                    let content = rmcp::model::ResourceContents::TextResourceContents {
+                        uri: uri.clone(),
+                        mime_type: None,
+                        text: resource,
+                    };
+                    Ok(rmcp::model::ReadResourceResult {
+                        contents: vec![content],
+                    })
+                }
+                Err(_) => Err(rmcp::ErrorData::resource_not_found(
                     format!("Resource not found: {}", uri),
                     None,
                 )),
