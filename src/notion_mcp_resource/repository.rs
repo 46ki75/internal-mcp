@@ -15,6 +15,11 @@ pub trait NotionRepository {
     fn list_resources(
         &self,
     ) -> Pin<Box<dyn Future<Output = Result<Vec<NotionMcpResourceDto>, crate::error::Error>>>>;
+
+    fn get_resource(
+        &self,
+        page_id: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>>>>;
 }
 
 pub struct NotionRepositoryImpl {}
@@ -61,6 +66,21 @@ impl NotionRepository for NotionRepositoryImpl {
             }
 
             Ok(resources)
+        })
+    }
+
+    fn get_resource(
+        &self,
+        page_id: &str,
+    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>>>> {
+        let page_id = page_id.to_owned();
+
+        Box::pin(async move {
+            let notionrs_client = notionrs_client::init_notionrs_client().await?;
+
+            let markdown = notionrs_client.to_markdown(page_id).await?.join("\n");
+
+            Ok(markdown)
         })
     }
 }
