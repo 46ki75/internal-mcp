@@ -7,6 +7,9 @@ license = "GPL-3.0"
 [dependencies]
 aws-config = "1.8.8"
 aws-sdk-ssm = "1.97.0"
+futures = "0.3.31"
+notionrs = "0.4.1"
+notionrs_types = "0.4.1"
 rmcp = { version = "0.6.1", features = ["schemars", "transport-io"] }
 schemars = "1.0.4"
 serde = "1.0.219"

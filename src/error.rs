@@ -11,4 +11,13 @@ pub enum Error {
 
     #[error("SsmParameterNotFound: parameter not found: `{parameter_name}`")]
     SsmParameterNotFound { parameter_name: String },
+
+    #[error("Notion API request failed: {0}")]
+    NotionApi(#[from] notionrs::Error),
+
+    #[error("property '{0}' not found in Notion page")]
+    NotionPagePropertyNotFound(String),
+
+    #[error("property '{0}' has unexpected schema type")]
+    NotionInvalidSchema(String),
 }

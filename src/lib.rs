@@ -1,5 +1,6 @@
 pub(crate) mod error;
 pub(crate) mod handler;
+pub(crate) mod notion_mcp_resource;
 pub(crate) mod once_cell_cache;
 pub(crate) mod prompt;
 pub(crate) mod resource;
