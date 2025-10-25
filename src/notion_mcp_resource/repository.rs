@@ -4,30 +4,29 @@ use futures::TryStreamExt;
 use notionrs::PaginateExt;
 
 use super::dto::*;
-use crate::{
-    notion_mcp_resource,
-    once_cell_cache::{ssm_parameter::*, *},
-};
+use crate::once_cell_cache::{ssm_parameter::*, *};
 
 use notionrs_types::prelude::*;
 
-pub trait NotionRepository {
+pub trait NotionMcpResourceRepository: Send + Sync {
     fn list_resources(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<NotionMcpResourceDto>, crate::error::Error>>>>;
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<NotionMcpResourceDto>, crate::error::Error>> + Send>>;
 
     fn get_resource(
         &self,
         page_id: &str,
-    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>>>>;
+    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>> + Send>>;
 }
 
-pub struct NotionRepositoryImpl {}
+#[derive(Clone)]
+pub struct NotionMcpResourceRepositoryImpl {}
 
-impl NotionRepository for NotionRepositoryImpl {
+impl NotionMcpResourceRepository for NotionMcpResourceRepositoryImpl {
     fn list_resources(
         &self,
-    ) -> Pin<Box<dyn Future<Output = Result<Vec<NotionMcpResourceDto>, crate::error::Error>>>> {
+    ) -> Pin<Box<dyn Future<Output = Result<Vec<NotionMcpResourceDto>, crate::error::Error>> + Send>>
+    {
         Box::pin(async move {
             let notionrs_client = notionrs_client::init_notionrs_client().await?;
 
@@ -60,7 +59,7 @@ impl NotionRepository for NotionRepositoryImpl {
                 };
 
                 resources.push(NotionMcpResourceDto {
-                    title,
+                    name: title,
                     uri: format!("notion://{}", page.id),
                 });
             }
@@ -72,7 +71,7 @@ impl NotionRepository for NotionRepositoryImpl {
     fn get_resource(
         &self,
         page_id: &str,
-    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>>>> {
+    ) -> Pin<Box<dyn Future<Output = Result<String, crate::error::Error>> + Send>> {
         let page_id = page_id.to_owned();
 
         Box::pin(async move {
